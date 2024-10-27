@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+{% block javascipt %}
+    <script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+{% block title %} Paiement de ma commande - La boutique beninoise{% endblock %}
+
+{% block content %}
+    <h2>Recapitulatif</h2>
+    <p>Verifier vos informations avant de payer votre commande.</p>
+    <hr>
+    <div class="row">
+        <div class="col-md-6">
+            <strong>Mon adresse de livraison</strong><br>
+            <div class="form-check mt-4">
+                {{ delivery |raw }}
+            </div>
+
+            <hr>
+            <strong>Mon transporteur</strong> <br>
+            <div class="form-check">
+                {{ carrier.name }} <br>
+                {{ carrier.description }} <br>
+                {{ (carrier.price /100)  |number_format(2, ',' , '.') }} €
+            </div>
+
+        </div>
+        <div class="col-md-6">
+            <div class="text-center">
+                <b>Ma commande </b> <br>
+            </div>
+
+            <div class="order-summary">
+                {% set total = null %}
+                {% for key, product in cart %}
+                    <div class="row {% if key > 0 %} mt-2 {% endif %}">
+                        <div class="col-2">
+                            <img src="/uploads/{{ product.product.illustration }}" alt="{{ product.product.name }}"
+                                 height="75px">
+                        </div>
+                        <div class="col-8 my-auto">
+                            {{ product.product.name }}<br>
+                            <small>
+                                {{ product.product.subtitle }}
+                            </small><br>
+                            x {{ product.quantity }}
+                        </div>
+                        <div class="col-2 my-auto">
+                            {{ ((product.product.price * product.quantity) /100)|number_format(2, ',' , '.') }} €
+                        </div>
+                    </div>
+                    {% set total = total + (product.product.price *product.quantity) %}
+                {% endfor %}
+            </div>
+            <hr>
+            <strong>Sous-Total : </strong> {{ (total /100)|number_format(2, ',' , '.') }} €<br>
+            <strong>Livraison : </strong> {{ (carrier.price /100)|number_format(2, ',' , '.') }} €
+            <hr>
+            <strong>Total : </strong> {{ ((total / 100) + (carrier.price / 100))|number_format(2, ',' , '.') }} €<br>
+            <a class="btn btn-success btn-block mt-3" type="submit" id="checkout-button"> Payer | {{ ((total / 100) + (carrier.price / 100))|number_format(2, ',' , '.') }} € </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+        var stripe = Stripe("pk_test_51PSTY4A8uudCD47DUkzaT2azHSMRyAMoei13pCAUYODIxNmhOA2Ef4mpYWjhZPRCqnQWMhiLjk5PFZcj8nyy0Rf800AYyXzmJ6");
+        var checkoutButton = document.getElementById("checkout-button");
+
+        console.log("Stripe object created:", stripe); // Vérification de l'objet Stripe
+
+        checkoutButton.addEventListener("click", function () {
+            console.log("Checkout button clicked"); // Vérification de l'événement click
+
+            fetch("/commande/create-session/{{ reference }}", {  // Correction du chemin
+                method: "POST",
+            })
+                .then(function (response) {
+                    console.log("Fetch response:", response); // Vérification de la réponse fetch
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(function (session) {
+                    if (session.error == 'order'){
+                        window.location.replace('{{ path('order') }}');
+                    }else {
+                        console.log("Stripe session:", session); // Vérification de la session Stripe
+                        return stripe.redirectToCheckout({ sessionId: session.id });//Redirection vers le payement
+                    }
+                })
+                .then(function (result) {
+                    if (result.error) {
+                        console.error("Stripe error:", result.error); // Vérification des erreurs Stripe
+                        alert(result.error.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.error("Fetch error:", error); // Vérification des erreurs fetch
+                });
+        });
+
+    </script>
+{% endblock %}
