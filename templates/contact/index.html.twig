@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nous contactez  - La boutiques Beninoise{% endblock %}
+
+{% block content %}
+    <h2>Nous contacter</h2>
+    <p>N'hésitez pas à prendre contact avec notre equipe,nous vous repondrons dans les meilleurs délais.</p>
+    {% for message in app.flashes('notice ') %}
+        <div class="alert alert-info"> {{ message }}</div>
+    {% endfor %}
+
+    <div class="row">
+    <div class="col-md-8">{{ form(form) }}</div>
+    <div class="col-md-4">
+        <strong>La boutique  beninoise</strong> <br>
+        <hr>
+        +229 96 78 58 79 <br>
+        8 rue cotonou  (adresse) <br>
+        contact@laboutique.bj
+    </div>
+</div>
+{% endblock %}

@@ -36,6 +36,10 @@ class Mail
             ]
         ];
         $response = $mj->post(Resources::$Email, ['body' => $body]);
-        $response->success() && dd($response->getData());
+        if ($response->success()) {
+            return $response->getData();
+        } else {
+            throw new \Exception('Erreur lors de l\'envoi de l\'email');
+        }
     }
 }

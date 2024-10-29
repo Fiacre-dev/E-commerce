@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page introuvable - La boutiques Beninoise{% endblock %}
+
+{% block content %}
+    <div class="block-small">
+        <h2>Page introuvable </h2>
+        <p>Desolé,cette page ne semble pas etre accessible pour le moment.</p>
+        <a href="{{ path('app_home') }}" class="btn btn-info">Revenir à l'acceuil</a>
+    </div>
+
+{% endblock %}
